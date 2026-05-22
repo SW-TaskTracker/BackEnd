@@ -46,10 +46,10 @@ jobs:
             sudo pkill -f 'java -jar' || true
             sleep 2
             cd /opt/routiner
-            nohup java -jar *.jar \
-              -DDB_URL='${{ secrets.DB_URL }}' \
-              -DDB_USERNAME='${{ secrets.DB_USERNAME }}' \
-              -DDB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
-              > /opt/routiner/app.log 2>&1 &
-            sleep 10
-            curl -s http://localhost:8080 || echo "서버 시작 중..."
+            sudo bash -c 'nohup java -jar *.jar \
+              -DDB_URL="${{ secrets.DB_URL }}" \
+              -DDB_USERNAME="${{ secrets.DB_USERNAME }}" \
+              -DDB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              > /opt/routiner/app.log 2>&1 &'
+            sleep 5
+            cat /opt/routiner/app.log | tail -20
