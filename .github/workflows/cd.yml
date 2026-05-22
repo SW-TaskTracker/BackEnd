@@ -38,18 +38,44 @@ jobs:
       - name: Restart server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          script: |
-            sudo pkill -f 'java -jar' || true
-            sleep 2
-            cd /opt/routiner
-            sudo bash -c 'nohup java -jar *.jar \
-              -DDB_URL="${{ secrets.DB_URL }}" \
-              -DDB_USERNAME="${{ secrets.DB_USERNAME }}" \
-              -DDB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              > /opt/routiner/app.log 2>&1 &'
-            sleep 5
-            cat /opt/routiner/app.log | tail -20
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USERNAME }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: ${{ secrets.EC2_PORT }}
+            envs: DB_URL,DB_USERNAME,DB_PASSWORD
+            script: |
+              cd /opt/routiner
+              # jar 파일명 통일
+              mv *.jar app.jar 2>/dev/null || true
+              
+              # 환경변수 파일 생성
+              sudo tee /opt/routiner/.env << ENVEOF
+              DB_URL=${{ secrets.DB_URL }}
+              DB_USERNAME=${{ secrets.DB_USERNAME }}
+              DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+              ENVEOF
+              
+              # 서비스 파일에 환경변수 반영
+              sudo tee /etc/systemd/system/routiner.service << SVCEOF
+              [Unit]
+              Description=Routiner Spring Boot App
+              After=network.target
+              
+              [Service]
+              User=ubuntu
+              WorkingDirectory=/opt/routiner
+              Environment="DB_URL=${{ secrets.DB_URL }}"
+              Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
+              Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+              ExecStart=/usr/bin/java -jar /opt/routiner/app.jar
+              Restart=always
+              RestartSec=5
+              
+              [Install]
+              WantedBy=multi-user.target
+              SVCEOF
+              
+              sudo systemctl daemon-reload
+              sudo systemctl restart routiner
+              sleep 10
+              sudo systemctl status routiner
