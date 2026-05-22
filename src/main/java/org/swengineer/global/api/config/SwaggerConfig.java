@@ -18,7 +18,7 @@ public class SwaggerConfig {
                 .components(new Components())
                 .info(apiInfo())
                 .servers(List.of(
-                        //new Server().url("나중에 배포한 서버").description("운영 서버"),
+                        new Server().url("https://loutiner.p-e.kr").description("운영 서버"),
                         new Server().url("http://localhost:8080").description("로컬 서버")
                 ));
     }
