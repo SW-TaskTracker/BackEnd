@@ -23,7 +23,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public void signUp(SignUpRequest request) {
+    public TokenResponse signUp(SignUpRequest request) {
         if (userRepository.existsByRoutinerId(request.routinerId())) {
             throw new CustomException(AuthErrorCode.DUPLICATE_ROUTINER_ID);
         }
@@ -34,6 +34,9 @@ public class AuthService {
                 passwordEncoder.encode(request.password())
         );
         userRepository.save(user);
+
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoutinerId());
+        return new TokenResponse(accessToken);
     }
 
     public TokenResponse login(LoginRequest request) {
