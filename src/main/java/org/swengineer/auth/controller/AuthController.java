@@ -16,7 +16,7 @@ import org.swengineer.auth.service.AuthService;
 import org.swengineer.global.api.response.dto.SuccessResponse;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
