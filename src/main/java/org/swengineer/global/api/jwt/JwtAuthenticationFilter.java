@@ -1,4 +1,4 @@
-package org.swengineer.global.api.config;
+package org.swengineer.global.api.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

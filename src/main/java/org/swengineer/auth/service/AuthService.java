@@ -8,7 +8,7 @@ import org.swengineer.auth.code.AuthErrorCode;
 import org.swengineer.auth.dto.request.LoginRequest;
 import org.swengineer.auth.dto.request.SignUpRequest;
 import org.swengineer.auth.dto.response.TokenResponse;
-import org.swengineer.global.api.config.JwtTokenProvider;
+import org.swengineer.global.api.jwt.JwtTokenProvider;
 import org.swengineer.global.api.exception.CustomException;
 import org.swengineer.user.entity.User;
 import org.swengineer.user.repository.UserRepository;
