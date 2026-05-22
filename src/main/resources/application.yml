@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/routiner
+    username: root
+    password: gmlals02**
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -16,3 +16,7 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:myDefaultSuperSecretKeyThatIsAtLeast256BitsLongForHS256Algorithm}
+  access-token-expiration: 2592000000  # 30일 (밀리초)
