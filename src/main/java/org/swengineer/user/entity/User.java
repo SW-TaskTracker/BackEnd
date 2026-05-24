@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -37,6 +39,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column
+    private LocalDateTime deletedAt;
+
     public static User create(String routinerId, String nickname, String password) {
         User user = new User();
         user.routinerId = routinerId;
@@ -47,5 +52,13 @@ public class User {
 
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void withdraw() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isWithdrawn() {
+        return this.deletedAt != null;
     }
 }
