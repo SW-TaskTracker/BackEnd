@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.swengineer.common.base.BaseEntity;
+import org.swengineer.habit.entity.enums.HabitCategory;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "habits")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Habit {
+public class Habit extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,28 +22,35 @@ public class Habit {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
+    //습관 이름
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private String name;
 
-    // null이면 활성, 값이 있으면 삭제된 습관 (soft delete)
-    @Column
-    private LocalDateTime deletedAt;
+    //습관 카테고리
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HabitCategory category;
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    //반복단위
+    @Column(nullable = false)
+    private int targetCountPerWeek;//1-7 선택
 
-    public boolean isDeleted() {
-        return this.deletedAt != null;
+
+
+    //습관 반복
+    public static Habit create(Long userId, String name,
+                               HabitCategory category,
+                               int targetCountPerWeek) {
+        // targetCountPerWeek 유효성 검사
+        if (targetCountPerWeek < 1 || targetCountPerWeek > 7) {
+            throw new IllegalArgumentException("주 목표 횟수는 1~7 사이여야 합니다.");
+        }
+        Habit habit = new Habit();
+        habit.userId = userId;
+        habit.name = name;
+        habit.category = category;
+        habit.targetCountPerWeek = targetCountPerWeek;
+        return habit;
     }
 }
