@@ -76,4 +76,20 @@ public class HabitController {
         List<HabitListResponse> response = habitService.getHabits(userId, dayOfWeek, category, keyword);
         return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_LIST_SUCCESS, response));
     }
+
+    @Operation(summary = "습관 체크인 토글",
+            description = """
+                오늘 날짜 기준으로 습관 체크인/취소를 토글합니다.
+                - 오늘 요일에 해당하는 습관만 체크인 가능
+                - 체크인 취소는 당일 23:59까지만 가능
+                - 중복 체크인 불가
+                - 체크인 시간이 자동 저장됩니다 (AI 분석용)
+                """)
+    @PostMapping("/{habitId}/check")
+    public ResponseEntity<SuccessResponse<Boolean>> toggleHabit(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long habitId) {
+        boolean completed = habitService.toggleHabitRecord(userId, habitId);
+        return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_TOGGLE_SUCCESS, completed));
+    }
 }

@@ -10,6 +10,7 @@ import org.swengineer.habit.dto.response.HabitListResponse;
 import org.swengineer.habit.dto.response.HabitResponse;
 import org.swengineer.habit.dto.response.TodayHabitResponse;
 import org.swengineer.habit.entity.Habit;
+import org.swengineer.habit.entity.HabitRecord;
 import org.swengineer.habit.entity.enums.FrequencyType;
 import org.swengineer.habit.entity.enums.HabitCategory;
 import org.swengineer.habit.repository.HabitRecordRepository;
@@ -17,6 +18,7 @@ import org.swengineer.habit.repository.HabitRepository;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -133,5 +135,39 @@ public class HabitService {
         }
 
         return streak;
+    }
+
+    @Transactional
+    public boolean toggleHabitRecord(Long userId, Long habitId) {
+        Habit habit = habitRepository.findById(habitId)
+                .orElseThrow(() -> new CustomException(HabitErrorCode.HABIT_NOT_FOUND));
+
+        if (!habit.getUserId().equals(userId)) {
+            throw new CustomException(HabitErrorCode.HABIT_NOT_FOUND);
+        }
+
+        LocalDate today = LocalDate.now();
+
+        // 오늘 해당하는 습관인지 확인
+        if (!habit.getCustomDays().contains(today.getDayOfWeek())) {
+            throw new CustomException(HabitErrorCode.NOT_TODAY_HABIT);
+        }
+
+        boolean exists = habitRecordRepository.existsByHabitIdAndRecordDate(habitId, today);
+
+        if (exists) {
+            // 취소: 당일 23:59까지만 가능
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime deadline = today.atTime(23, 59, 59);
+            if (now.isAfter(deadline)) {
+                throw new CustomException(HabitErrorCode.CANCEL_TIME_EXPIRED);
+            }
+            habitRecordRepository.deleteByHabitIdAndRecordDate(habitId, today);
+            return false;
+        } else {
+            // 체크인: 중복 방지 (unique constraint + 코드 레벨 검증)
+            habitRecordRepository.save(HabitRecord.create(habit, today));
+            return true;
+        }
     }
 }
