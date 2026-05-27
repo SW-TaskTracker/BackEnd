@@ -77,6 +77,7 @@ public class HabitController {
         return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_LIST_SUCCESS, response));
     }
 
+    /*
     @Operation(summary = "습관 체크인 토글",
             description = """
                 오늘 날짜 기준으로 습관 체크인/취소를 토글합니다.
@@ -92,4 +93,6 @@ public class HabitController {
         boolean completed = habitService.toggleHabitRecord(userId, habitId);
         return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_TOGGLE_SUCCESS, completed));
     }
+
+     */
 }

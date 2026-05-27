@@ -3,6 +3,7 @@ package org.swengineer.habit.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.swengineer.checkin.repository.CheckInRepository;
 import org.swengineer.global.api.exception.CustomException;
 import org.swengineer.habit.code.HabitErrorCode;
 import org.swengineer.habit.dto.request.CreateHabitRequest;
@@ -19,6 +20,7 @@ import org.swengineer.habit.repository.HabitRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -29,6 +31,7 @@ public class HabitService {
     private static final int MAX_ACTIVE_HABITS = 10;
     private final HabitRepository habitRepository;
     private final HabitRecordRepository habitRecordRepository;
+    private final CheckInRepository checkInRepository;
 
     @Transactional
     public HabitResponse createHabit(Long userId, CreateHabitRequest request) {
@@ -59,16 +62,18 @@ public class HabitService {
 
     // ========== 메인 홈: 오늘의 습관 ==========
     public TodayHabitResponse getTodayHabits(Long userId,HabitCategory category) {
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        DayOfWeek todayDow = today.getDayOfWeek();
+
         List<Habit> habits;
         if (category != null) {
-            habits = habitRepository.findByUserIdAndDayOfWeekAndCategory(userId, today, category);
+            habits = habitRepository.findByUserIdAndDayOfWeekAndCategory(userId, todayDow, category);
         } else {
-            habits = habitRepository.findByUserIdAndDayOfWeek(userId, today);
+            habits = habitRepository.findByUserIdAndDayOfWeek(userId, todayDow);
         }
 
         List<HabitListResponse> responses = habits.stream()
-                .map(this::toHabitListResponse)
+                .map(habit -> toHabitListResponse(habit, userId, today))
                 .toList();
 
         return TodayHabitResponse.of(responses);
@@ -77,8 +82,10 @@ public class HabitService {
     // ========== 습관 목록: 필터 + 검색 ==========
     public List<HabitListResponse> getHabits(Long userId, DayOfWeek dayOfWeek,
                                              HabitCategory category, String keyword) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
         if (dayOfWeek == null) {
-            dayOfWeek = LocalDate.now().getDayOfWeek();
+            dayOfWeek = today.getDayOfWeek();
         }
 
         List<Habit> habits;
@@ -88,7 +95,6 @@ public class HabitService {
             habits = habitRepository.findByUserIdAndDayOfWeek(userId, dayOfWeek);
         }
 
-        // 검색어 필터
         if (keyword != null && !keyword.isBlank()) {
             String search = keyword.trim().toLowerCase();
             habits = habits.stream()
@@ -97,34 +103,36 @@ public class HabitService {
         }
 
         return habits.stream()
-                .map(habit -> toHabitListResponse(habit))
+                .map(habit -> toHabitListResponse(habit, userId, today))
                 .toList();
     }
 
     // ========== 공통: 응답 변환 ==========
-    private HabitListResponse toHabitListResponse(Habit habit) {
-        LocalDate today = LocalDate.now();
-        boolean completedToday = habitRecordRepository
-                .existsByHabitIdAndRecordDate(habit.getId(), today);
-        int streak = calculateStreak(habit);
+    private HabitListResponse toHabitListResponse(Habit habit, Long userId, LocalDate today) {
+        boolean completedToday = checkInRepository
+                .findTodayCheckIn(userId, habit.getId(), today)
+                .isPresent();
+        int streak = calculateStreak(habit, userId, today);
         return HabitListResponse.of(habit, completedToday, streak);
     }
 
     // ========== 연속 기록 계산 ==========
-    private int calculateStreak(Habit habit) {
-        LocalDate date = LocalDate.now();
+    private int calculateStreak(Habit habit, Long userId, LocalDate today) {
+        LocalDate date = today;
         int streak = 0;
 
-        boolean completedToday = habitRecordRepository
-                .existsByHabitIdAndRecordDate(habit.getId(), date);
+        boolean completedToday = checkInRepository
+                .findTodayCheckIn(userId, habit.getId(), date)
+                .isPresent();
         if (!completedToday) {
             date = date.minusDays(1);
         }
 
         while (streak <= 365) {
             if (habit.getCustomDays().contains(date.getDayOfWeek())) {
-                boolean done = habitRecordRepository
-                        .existsByHabitIdAndRecordDate(habit.getId(), date);
+                boolean done = checkInRepository
+                        .findTodayCheckIn(userId, habit.getId(), date)
+                        .isPresent();
                 if (done) {
                     streak++;
                 } else {
