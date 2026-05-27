@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "habit_records",
@@ -25,10 +26,14 @@ public class HabitRecord {
     @Column(nullable = false)
     private LocalDate recordDate;
 
+    @Column(nullable = false)
+    private LocalDateTime checkedInAt;
+
     public static HabitRecord create(Habit habit, LocalDate date) {
         HabitRecord record = new HabitRecord();
         record.habit = habit;
         record.recordDate = date;
+        record.checkedInAt = LocalDateTime.now();
         return record;
     }
 }
