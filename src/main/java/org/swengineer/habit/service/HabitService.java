@@ -7,6 +7,7 @@ import org.swengineer.checkin.repository.CheckInRepository;
 import org.swengineer.global.api.exception.CustomException;
 import org.swengineer.habit.code.HabitErrorCode;
 import org.swengineer.habit.dto.request.CreateHabitRequest;
+import org.swengineer.habit.dto.request.UpdateHabitRequest;
 import org.swengineer.habit.dto.response.HabitListResponse;
 import org.swengineer.habit.dto.response.HabitResponse;
 import org.swengineer.habit.dto.response.TodayHabitResponse;
@@ -143,6 +144,47 @@ public class HabitService {
         }
 
         return streak;
+    }
+
+    @Transactional
+    public HabitResponse updateHabit(Long userId, Long habitId, UpdateHabitRequest request) {
+        Habit habit = habitRepository.findById(habitId)
+                .orElseThrow(() -> new CustomException(HabitErrorCode.HABIT_NOT_FOUND));
+
+        if (!habit.getUserId().equals(userId)) {
+            throw new CustomException(HabitErrorCode.HABIT_NOT_FOUND);
+        }
+
+        if (habit.getDeletedAt() != null) {
+            throw new CustomException(HabitErrorCode.HABIT_NOT_FOUND);
+        }
+
+        if (request.frequencyType() == FrequencyType.CUSTOM) {
+            if (request.customDays() == null || request.customDays().isEmpty()) {
+                throw new CustomException(HabitErrorCode.CUSTOM_DAYS_REQUIRED);
+            }
+        }
+
+        habit.update(request.name(), request.category(),
+                request.frequencyType(), request.customDays());
+
+        return HabitResponse.from(habit);
+    }
+
+    @Transactional
+    public void deleteHabit(Long userId, Long habitId) {
+        Habit habit = habitRepository.findById(habitId)
+                .orElseThrow(() -> new CustomException(HabitErrorCode.HABIT_NOT_FOUND));
+
+        if (!habit.getUserId().equals(userId)) {
+            throw new CustomException(HabitErrorCode.HABIT_NOT_FOUND);
+        }
+
+        if (habit.getDeletedAt() != null) {
+            throw new CustomException(HabitErrorCode.HABIT_NOT_FOUND);
+        }
+
+        habit.softDelete();
     }
 
     @Transactional

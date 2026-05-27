@@ -11,6 +11,7 @@ import org.swengineer.global.api.response.dto.ApiResponse;
 import org.swengineer.global.api.response.dto.SuccessResponse;
 import org.swengineer.habit.code.HabitSuccessCode;
 import org.swengineer.habit.dto.request.CreateHabitRequest;
+import org.swengineer.habit.dto.request.UpdateHabitRequest;
 import org.swengineer.habit.dto.response.HabitListResponse;
 import org.swengineer.habit.dto.response.HabitResponse;
 import org.swengineer.habit.dto.response.TodayHabitResponse;
@@ -75,6 +76,34 @@ public class HabitController {
             String keyword) {
         List<HabitListResponse> response = habitService.getHabits(userId, dayOfWeek, category, keyword);
         return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_LIST_SUCCESS, response));
+    }
+
+    @Operation(summary = "습관 수정",
+            description = """
+                습관의 이름, 카테고리, 빈도를 수정합니다.
+                - 과거 체크인 데이터는 보존됩니다
+                """)
+    @PutMapping("/{habitId}")
+    public ResponseEntity<SuccessResponse<HabitResponse>> updateHabit(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long habitId,
+            @Valid @RequestBody UpdateHabitRequest request) {
+        HabitResponse response = habitService.updateHabit(userId, habitId, request);
+        return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_UPDATED, response));
+    }
+
+    @Operation(summary = "습관 삭제",
+            description = """
+                습관을 soft delete 처리합니다.
+                - 과거 체크인 기록은 보존됩니다
+                - 오늘 이후 메인 목록에서 제외됩니다
+                """)
+    @DeleteMapping("/{habitId}")
+    public ResponseEntity<SuccessResponse<Void>> deleteHabit(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long habitId) {
+        habitService.deleteHabit(userId, habitId);
+        return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_DELETED));
     }
 
     /*
