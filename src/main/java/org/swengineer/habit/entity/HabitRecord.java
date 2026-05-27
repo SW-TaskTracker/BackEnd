@@ -18,15 +18,16 @@ public class HabitRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long habitId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "habit_id", nullable = false)
+    private Habit habit;
 
     @Column(nullable = false)
     private LocalDate recordDate;
 
-    public static HabitRecord create(Long habitId, LocalDate date) {
+    public static HabitRecord create(Habit habit, LocalDate date) {
         HabitRecord record = new HabitRecord();
-        record.habitId = habitId;
+        record.habit = habit;
         record.recordDate = date;
         return record;
     }
