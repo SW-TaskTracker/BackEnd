@@ -46,8 +46,11 @@ public class HabitController {
             description = "오늘 요일에 해당하는 습관 목록 + 달성률 + 최고 스트릭을 조회합니다.")
     @GetMapping("/today")
     public ResponseEntity<SuccessResponse<TodayHabitResponse>> getTodayHabits(
-            @AuthenticationPrincipal Long userId) {
-        TodayHabitResponse response = habitService.getTodayHabits(userId);
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(required = false)
+            @Schema(description = "카테고리 필터")
+            HabitCategory category) {
+        TodayHabitResponse response = habitService.getTodayHabits(userId,category);
         return ResponseEntity.ok(ApiResponse.success(HabitSuccessCode.HABIT_LIST_SUCCESS, response));
     }
 

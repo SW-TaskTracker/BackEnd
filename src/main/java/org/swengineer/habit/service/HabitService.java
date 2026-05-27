@@ -56,12 +56,17 @@ public class HabitService {
     }
 
     // ========== 메인 홈: 오늘의 습관 ==========
-    public TodayHabitResponse getTodayHabits(Long userId) {
+    public TodayHabitResponse getTodayHabits(Long userId,HabitCategory category) {
         DayOfWeek today = LocalDate.now().getDayOfWeek();
-        List<Habit> habits = habitRepository.findByUserIdAndDayOfWeek(userId, today);
+        List<Habit> habits;
+        if (category != null) {
+            habits = habitRepository.findByUserIdAndDayOfWeekAndCategory(userId, today, category);
+        } else {
+            habits = habitRepository.findByUserIdAndDayOfWeek(userId, today);
+        }
 
         List<HabitListResponse> responses = habits.stream()
-                .map(habit -> toHabitListResponse(habit))
+                .map(this::toHabitListResponse)
                 .toList();
 
         return TodayHabitResponse.of(responses);
