@@ -37,4 +37,30 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
             @Param("habitId") Long habitId,
             @Param("date") LocalDate date
     );
+
+    // 통계용: 기간 내 유저의 완료된 체크인 habitId 목록 조회
+    @Query("""
+        SELECT c.habitId FROM CheckIn c
+        WHERE c.userId = :userId
+          AND c.isCanceled = false
+          AND c.checkedDate >= :startDate
+          AND c.checkedDate <= :endDate
+        """)
+    List<Long> findCompletedHabitIdsByPeriod(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    // 통계용: 특정 날짜에 완료된 체크인 habitId 목록
+    @Query("""
+        SELECT c.habitId FROM CheckIn c
+        WHERE c.userId = :userId
+          AND c.isCanceled = false
+          AND c.checkedDate = :date
+        """)
+    List<Long> findCompletedHabitIdsByDate(
+            @Param("userId") Long userId,
+            @Param("date") LocalDate date
+    );
 }
