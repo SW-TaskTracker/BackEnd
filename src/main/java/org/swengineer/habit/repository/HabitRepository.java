@@ -44,4 +44,23 @@ public interface HabitRepository extends JpaRepository<Habit, Long> {
             @Param("periodStart") LocalDateTime periodStart,
             @Param("periodEnd") LocalDateTime periodEnd
     );
+
+    /**
+     * 히스토리 조회용: 특정 날짜 당시 활성이었고, 해당 요일에 해당하는 습관 조회
+     * - createdAt <= targetDate (그날 이전에 생성된 습관)
+     * - deletedAt IS NULL OR deletedAt > targetDate (그날 이후에 삭제되었거나 아직 활성)
+     * - customDays에 해당 요일 포함
+     */
+    @Query("""
+        SELECT h FROM Habit h JOIN h.customDays d
+        WHERE h.userId = :userId
+          AND d = :dayOfWeek
+          AND h.createdAt <= :targetDateTime
+          AND (h.deletedAt IS NULL OR h.deletedAt > :targetDateTime)
+        """)
+    List<Habit> findHabitsActiveOnDate(
+            @Param("userId") Long userId,
+            @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("targetDateTime") LocalDateTime targetDateTime
+    );
 }
