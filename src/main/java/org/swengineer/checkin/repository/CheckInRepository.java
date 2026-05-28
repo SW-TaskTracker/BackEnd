@@ -63,4 +63,16 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
             @Param("userId") Long userId,
             @Param("date") LocalDate date
     );
+
+    // 히스토리용: 특정 날짜의 완료된 체크인 전체 조회 (CheckIn 엔티티 반환 - 시각 정보 포함)
+    @Query("""
+        SELECT c FROM CheckIn c
+        WHERE c.userId = :userId
+          AND c.isCanceled = false
+          AND c.checkedDate = :date
+        """)
+    List<CheckIn> findCompletedCheckInsByDate(
+            @Param("userId") Long userId,
+            @Param("date") LocalDate date
+    );
 }
