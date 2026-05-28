@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.swengineer.global.api.exception.CustomException;
 import org.swengineer.habit.repository.HabitRepository;
+import org.swengineer.stats.common.AchievementCalculator;
 import org.swengineer.user.code.UserErrorCode;
 import org.swengineer.user.dto.request.UpdateNicknameRequest;
 import org.swengineer.user.dto.response.ProfileResponse;
@@ -18,12 +19,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final HabitRepository habitRepository;
+    private final AchievementCalculator achievementCalculator;
 
     // 프로필 조회
     public ProfileResponse getProfile(Long userId) {
         User user = findActiveUser(userId);
         int activeHabitCount = habitRepository.countByUserIdAndDeletedAtIsNull(userId);
-        return new ProfileResponse(user.getNickname(), activeHabitCount);
+        double monthlyAchievementRate = achievementCalculator.calcThisMonthRate(userId);
+        return new ProfileResponse(user.getNickname(), activeHabitCount, monthlyAchievementRate);
     }
 
     // 닉네임 수정
