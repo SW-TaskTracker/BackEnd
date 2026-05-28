@@ -1,0 +1,19 @@
+package org.swengineer.habit.code;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.swengineer.global.api.code.SuccessResultCode;
+
+@Getter
+@RequiredArgsConstructor
+public enum HabitSuccessCode implements SuccessResultCode {
+    HABIT_CREATED(HttpStatus.CREATED, "습관이 등록되었습니다."),
+    HABIT_LIST_SUCCESS(HttpStatus.OK, "습관 목록 조회 성공"),
+    HABIT_TOGGLE_SUCCESS(HttpStatus.OK, "습관 완료 상태가 변경되었습니다."),
+    HABIT_UPDATED(HttpStatus.OK, "습관이 수정되었습니다."),
+    HABIT_DELETED(HttpStatus.OK, "습관이 삭제되었습니다.");
+
+    private final HttpStatus Status;
+    private final String message;
+}

@@ -2,5 +2,6 @@ package org.swengineer.user.dto.response;
 
 public record ProfileResponse(
         String nickname,
-        int activeHabitCount
+        int activeHabitCount,
+        double monthlyAchievementRate
 ) {}

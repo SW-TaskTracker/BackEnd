@@ -1,5 +1,6 @@
 package org.swengineer.user.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class UserController {
 
     private final UserService userService;
 
-    // 프로필 조회
+    @Operation(summary = "프로필 조회")
     @GetMapping("/me")
     public ResponseEntity<SuccessResponse<ProfileResponse>> getProfile(
             @AuthenticationPrincipal Long userId
@@ -30,7 +31,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(UserSuccessCode.GET_PROFILE_SUCCESS, profile));
     }
 
-    // 닉네임 수정
+    @Operation(summary = "닉네임 수정")
     @PatchMapping("/me/nickname")
     public ResponseEntity<SuccessResponse<Void>> updateNickname(
             @AuthenticationPrincipal Long userId,
@@ -40,7 +41,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(UserSuccessCode.UPDATE_NICKNAME_SUCCESS));
     }
 
-    // 회원탈퇴
+    @Operation(summary = "회원 탈퇴")
     @DeleteMapping("/me")
     public ResponseEntity<SuccessResponse<Void>> withdraw(
             @AuthenticationPrincipal Long userId,
@@ -52,7 +53,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(UserSuccessCode.WITHDRAW_SUCCESS));
     }
 
-    // 로그아웃
+    @Operation(summary = "로그아웃")
     @PostMapping("/me/logout")
     public ResponseEntity<SuccessResponse<Void>> logout(
             @AuthenticationPrincipal Long userId,
