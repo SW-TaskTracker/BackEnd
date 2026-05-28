@@ -1,5 +1,6 @@
 package org.swengineer.checkin.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,15 @@ public class CheckInController {
     private final CheckInService checkInService;
 
     //체크인 처리
+
+    @Operation(summary = "습관 체크인 토글",
+            description = """
+                오늘 날짜 기준으로 습관 체크인/취소를 토글합니다.
+                - 오늘 요일에 해당하는 습관만 체크인 가능
+                - 체크인 취소는 당일 23:59까지만 가능
+                - 중복 체크인 불가
+                - 체크인 시간이 자동 저장됩니다 (AI 분석용)
+                """)
     @PostMapping
     public ResponseEntity<SuccessResponse<CheckInResponse>> checkIn(
             @AuthenticationPrincipal Long userId,
@@ -32,6 +42,12 @@ public class CheckInController {
     }
 
     //체크인 취소
+
+    @Operation(summary = "습관 체크인 취소",
+            description = """
+            체크인을 취소합니다.
+            - 당일 23:59까지만 취소 가능
+            """)
     @DeleteMapping("/{checkInId}")
     public ResponseEntity<SuccessResponse<Void>> cancel(
             @AuthenticationPrincipal Long userId,
