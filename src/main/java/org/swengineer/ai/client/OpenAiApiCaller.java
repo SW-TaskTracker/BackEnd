@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.swengineer.ai.dto.request.ChatGptRequest;
+import org.swengineer.ai.dto.request.Message;
+import org.swengineer.ai.dto.response.ChatGptResponse;
 
 import java.util.List;
 

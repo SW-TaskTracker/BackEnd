@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.swengineer.ai.client.OpenAiApiCaller;
+import org.swengineer.ai.dto.context.MorningCoachingContext;
 import org.swengineer.ai.dto.request.Message;
-import org.swengineer.ai.dto.request.MorningCoachContext;
 import org.swengineer.ai.fallback.FallbackMessageProvider;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class AiCoachingService {
         
         """;
 
-    public String generatingMorningMessage(MorningCoachContext context){
+    public String generatingMorningMessage(MorningCoachingContext context){
 
     try{
         String userPrompt = builderUserPrompt(context);
@@ -51,7 +51,7 @@ public class AiCoachingService {
 
 }
 
-private String builderUserPrompt(MorningCoachContext context) {
+private String builderUserPrompt(MorningCoachingContext context) {
     return String.format(
             """
                     사용자 정보:
@@ -61,9 +61,9 @@ private String builderUserPrompt(MorningCoachContext context) {
                                \s
                                 위 정보를 바탕으로 오늘 아침 응원/리마인더 메시지를 생성해주세요.        
                     """,
-            context.getCurrentStreak(),
-            String.join(", ",context.getTodayHabits())
-            context.getAchievementRate()
+            context.currentStreak(),
+            String.join(", ",context.todayHabits()),
+            context.achievementRate()
     );}
 
     private String validateAndTrim(String message) {

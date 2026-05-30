@@ -12,6 +12,8 @@ import org.swengineer.user.dto.response.ProfileResponse;
 import org.swengineer.user.entity.User;
 import org.swengineer.user.repository.UserRepository;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -56,5 +58,9 @@ public class UserService {
             throw new CustomException(UserErrorCode.ALREADY_WITHDRAWN);
         }
         return user;
+    }
+
+    public List<User> getActiveUsers() {
+        return userRepository.findAllByDeletedAtIsNull();
     }
 }
