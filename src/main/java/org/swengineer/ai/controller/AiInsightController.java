@@ -38,8 +38,7 @@ public class AiInsightController {
             - COLD_START: 데이터 부족 (7일 미만)
             - PENDING: 데이터는 충분하나 아직 인사이트 미생성 (매주 일요일 밤 업데이트)
             - INSIGHT: 정상 인사이트 반환
-            """,
-            security = @SecurityRequirement(name = "bearerAuth")
+            """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공 (type 필드로 상태 구분)"),

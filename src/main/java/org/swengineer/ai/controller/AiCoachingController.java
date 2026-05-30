@@ -31,8 +31,7 @@ public class AiCoachingController {
 
     @Operation(
             summary = "코칭 메시지 조회",
-            description = "가장 최근에 생성된 AI 코칭 메시지를 반환합니다. 메시지는 매일 아침 7시에 자동 생성됩니다.",
-            security = @SecurityRequirement(name = "bearerAuth")
+            description = "가장 최근에 생성된 AI 코칭 메시지를 반환합니다. 메시지는 매일 아침 7시에 자동 생성됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공 (메시지 없을 경우 hasMessage: false 반환)"),
