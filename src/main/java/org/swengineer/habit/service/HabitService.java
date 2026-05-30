@@ -220,4 +220,29 @@ public class HabitService {
             return true;
         }
     }
+
+    @Transactional
+    // 1. 오늘 습관 이름 목록 (코칭 메시지용)
+    public List<String> getTodayHabitNames(Long userId) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        DayOfWeek todayDow = today.getDayOfWeek();
+
+        return habitRepository.findByUserIdAndDayOfWeek(userId, todayDow)
+                .stream()
+                .map(Habit::getName)
+                .toList();
+    }
+
+    @Transactional
+    // 2. 유저의 전체 습관 중 최대 스트릭 (대표값으로 사용)
+    public int getMaxStreak(Long userId) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        DayOfWeek todayDow = today.getDayOfWeek();
+
+        return habitRepository.findByUserIdAndDayOfWeek(userId, todayDow)
+                .stream()
+                .mapToInt(habit -> calculateStreak(habit, userId, today))
+                .max()
+                .orElse(0);
+    }
 }
