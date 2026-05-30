@@ -75,4 +75,10 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
             @Param("userId") Long userId,
             @Param("date") LocalDate date
     );
+
+    // 7일 이상 데이터 확인용
+    int countByUserIdAndCheckedDateAfter(Long userId, LocalDate date);
+
+    // 인사이트 프롬프트 생성용
+    List<CheckIn> findByUserIdAndCheckedDateAfter(Long userId, LocalDate date);
 }
