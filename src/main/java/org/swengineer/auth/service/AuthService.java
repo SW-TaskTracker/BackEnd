@@ -49,6 +49,6 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoutinerId());
-        return new TokenResponse(accessToken,user.getNickname());
+        return new LoginResult(new TokenResponse(accessToken),user.getNickname());
     }
 }
