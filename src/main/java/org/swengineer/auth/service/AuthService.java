@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.swengineer.auth.code.AuthErrorCode;
 import org.swengineer.auth.dto.request.LoginRequest;
 import org.swengineer.auth.dto.request.SignUpRequest;
+import org.swengineer.auth.dto.response.LoginResult;
 import org.swengineer.auth.dto.response.TokenResponse;
 import org.swengineer.global.api.jwt.JwtTokenProvider;
 import org.swengineer.global.api.exception.CustomException;
@@ -39,7 +40,7 @@ public class AuthService {
         return new TokenResponse(accessToken);
     }
 
-    public TokenResponse login(LoginRequest request) {
+    public LoginResult login(LoginRequest request) {
         User user = userRepository.findByRoutinerId(request.routinerId())
                 .orElseThrow(() -> new CustomException(AuthErrorCode.USER_NOT_FOUND));
 
@@ -48,6 +49,6 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoutinerId());
-        return new TokenResponse(accessToken);
+        return new TokenResponse(accessToken,user.getNickname());
     }
 }

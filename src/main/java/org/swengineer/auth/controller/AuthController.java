@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.swengineer.auth.code.AuthSuccessCode;
+import org.swengineer.auth.dto.response.LoginResult;
 import org.swengineer.auth.util.HeaderUtil;
 import org.swengineer.global.api.response.dto.ApiResponse;
 import org.swengineer.auth.dto.request.LoginRequest;
@@ -39,8 +40,8 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
-        TokenResponse token = authService.login(request);
-        setTokens(response, token);
+        LoginResult result = authService.login(request);
+        setTokens(response, result.token());
         return ResponseEntity.ok(ApiResponse.success(AuthSuccessCode.LOGIN_SUCCESS));
     }
 
