@@ -36,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<SuccessResponse<Void>> login(
+    public ResponseEntity<SuccessResponse<LoginResult>> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
