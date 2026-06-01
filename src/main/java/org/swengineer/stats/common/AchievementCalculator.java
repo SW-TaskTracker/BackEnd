@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -20,15 +21,24 @@ public class AchievementCalculator {
     private final CheckInRepository checkInRepository;
 
     /**
-     * 이번 달 1일 ~ 오늘까지 달성률 계산
+     * 이번 달 달성률 계산
+     * 삭제된 습관의 체크인은 분자에서 제외
      */
     public double calcThisMonthRate(Long userId) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate start = today.withDayOfMonth(1);
 
         List<Habit> activeHabits = habitRepository.findByUserIdAndDeletedAtIsNull(userId);
+        Set<Long> activeHabitIds = activeHabits.stream()
+                .map(Habit::getId)
+                .collect(Collectors.toSet());
+
         int targetCount = countTargetDaysInPeriod(activeHabits, start, today);
-        int completedCount = checkInRepository.findCompletedHabitIdsByPeriod(userId, start, today).size();
+        int completedCount = (int) checkInRepository
+                .findCompletedHabitIdsByPeriod(userId, start, today)
+                .stream()
+                .filter(activeHabitIds::contains)
+                .count();
 
         return calcRate(completedCount, targetCount);
     }
