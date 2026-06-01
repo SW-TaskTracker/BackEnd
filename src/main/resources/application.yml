@@ -26,3 +26,7 @@ openai:
   model: gpt-4o-mini
   api:
     url: https://api.openai.com/v1/chat/completions
+    
+logging:
+  level:
+    org.springframework.security: DEBUG
