@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.swengineer.ai.dto.response.CoachingMessageResponse;
 import org.swengineer.ai.entity.CoachingMessage;
 import org.swengineer.ai.repository.CoachingMessageRepository;
 import org.swengineer.ai.scheduler.MorningCoachingScheduler;
+import org.swengineer.ai.service.AiCoachingService;
 
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +30,7 @@ public class AiCoachingController {
 
     private final CoachingMessageRepository coachingMessageRepository;
     private final MorningCoachingScheduler morningCoachingScheduler;
+    private final AiCoachingService aiCoachingService;
 
     @Operation(
             summary = "코칭 메시지 조회",
@@ -39,25 +42,10 @@ public class AiCoachingController {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping
-    public ResponseEntity<?> getCoachingMessage(@AuthenticationPrincipal Long userId) {
-        Optional<CoachingMessage> message = coachingMessageRepository
-                .findTopByUserIdOrderByGeneratedAtDesc(userId);
-
-        if (message.isEmpty()) {
-            return ResponseEntity.ok(Map.of(
-                    "hasMessage", false,
-                    "message", "아직 코칭 메시지가 없어요! 내일 아침 7시에 첫 메시지가 도착할 거예요 🌅"
-            ));
-        }
-
-        return ResponseEntity.ok(Map.of(
-                "hasMessage", true,
-                "content", message.get().getContent(),
-                "generatedAt", message.get().getGeneratedAt()
-        ));
+    public ResponseEntity<CoachingMessageResponse> getCoachingMessage(
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(aiCoachingService.getCoachingMessage(userId));
     }
-
-
     @Operation(
             summary = "[개발용] 코칭 메시지 수동 생성",
             description = "스케줄러를 즉시 실행하여 모든 유저의 코칭 메시지를 강제 생성합니다. 개발/테스트 환경에서만 사용하세요."

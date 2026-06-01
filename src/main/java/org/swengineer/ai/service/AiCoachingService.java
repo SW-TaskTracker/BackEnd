@@ -6,8 +6,12 @@ import org.springframework.stereotype.Service;
 import org.swengineer.ai.client.OpenAiApiCaller;
 import org.swengineer.ai.dto.context.MorningCoachingContext;
 import org.swengineer.ai.dto.request.Message;
+import org.swengineer.ai.dto.response.CoachingMessageResponse;
 import org.swengineer.ai.fallback.FallbackMessageProvider;
+import org.swengineer.ai.repository.CoachingMessageRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -17,6 +21,7 @@ public class AiCoachingService {
 
     private final OpenAiApiCaller openAiApiCaller;
     private final FallbackMessageProvider fallbackMessageProvider;
+    private final CoachingMessageRepository coachingMessageRepository;
 
     private static final String SYSTEM_PROMPT =
             """
@@ -72,6 +77,24 @@ private String builderUserPrompt(MorningCoachingContext context) {
         }
         // 150자 초과 시 자르기 (안전장치)
         return message.length() > 150 ? message.substring(0, 150) : message;
+    }
+
+    public CoachingMessageResponse getCoachingMessage(Long userId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime todayAt7 = today.atTime(7, 0);
+        LocalDateTime tomorrowAt7 = today.plusDays(1).atTime(7, 0);
+
+        if (LocalDateTime.now().isBefore(todayAt7)) {
+            todayAt7 = today.minusDays(1).atTime(7, 0);
+            tomorrowAt7 = today.atTime(7, 0);
+        }
+
+        return coachingMessageRepository
+                .findTopByUserIdAndGeneratedAtBetweenOrderByGeneratedAtDesc(
+                        userId, todayAt7, tomorrowAt7
+                )
+                .map(msg -> CoachingMessageResponse.of(msg.getContent(), msg.getGeneratedAt()))
+                .orElse(CoachingMessageResponse.empty());
     }
 }
 
