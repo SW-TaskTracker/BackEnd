@@ -30,8 +30,8 @@ public class AuthController {
             @Valid @RequestBody SignUpRequest request,
             HttpServletResponse response
     ) {
-        TokenResponse token= authService.signUp(request);
-        setTokens(response,token);
+        TokenResponse token = authService.signUp(request);
+        setTokens(response, token);
         return ResponseEntity.ok(ApiResponse.success(AuthSuccessCode.SIGNUP_SUCCESS));
     }
 
@@ -42,7 +42,8 @@ public class AuthController {
     ) {
         LoginResult result = authService.login(request);
         setTokens(response, result.token());
-        return ResponseEntity.ok(ApiResponse.success(AuthSuccessCode.LOGIN_SUCCESS));
+
+        return ResponseEntity.ok(ApiResponse.success(AuthSuccessCode.LOGIN_SUCCESS, result));
     }
 
     private void setTokens(HttpServletResponse response, TokenResponse tokens) {
