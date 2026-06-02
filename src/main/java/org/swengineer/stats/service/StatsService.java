@@ -39,62 +39,56 @@ public class StatsService {
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
-        // 이번 달 범위
         LocalDate thisMonthStart = today.withDayOfMonth(1);
         LocalDate thisMonthEnd = today;
-
-        // 지난 달 범위
         LocalDate lastMonthStart = thisMonthStart.minusMonths(1);
         LocalDate lastMonthEnd = lastMonthStart.withDayOfMonth(lastMonthStart.lengthOfMonth());
-
-        // 이번 주 월~일
         LocalDate weekMonday = today.with(WeekFields.ISO.dayOfWeek(), 1);
         LocalDate weekSunday = weekMonday.plusDays(6);
 
         List<Habit> activeHabits = habitRepository.findByUserIdAndDeletedAtIsNull(userId);
 
-        // 이번 달 완료 체크인 목록
+        // 핵심 수정: 활성 습관 ID Set으로 삭제된 습관의 체크인을 분자에서 제외
+        Set<Long> activeHabitIds = activeHabits.stream()
+                .map(Habit::getId)
+                .collect(Collectors.toSet());
+
         List<Long> thisMonthCompletedList =
-                checkInRepository.findCompletedHabitIdsByPeriod(userId, thisMonthStart, thisMonthEnd);
+                checkInRepository.findCompletedHabitIdsByPeriod(userId, thisMonthStart, thisMonthEnd)
+                        .stream()
+                        .filter(activeHabitIds::contains)
+                        .toList();
 
-        // 지난 달 완료 체크인 목록
+        List<Habit> lastMonthHabits = habitRepository.findHabitsActiveInPeriod(
+                userId, lastMonthStart.atStartOfDay(), lastMonthEnd.atTime(23, 59, 59));
+        Set<Long> lastMonthHabitIds = lastMonthHabits.stream()
+                .map(Habit::getId)
+                .collect(Collectors.toSet());
         List<Long> lastMonthCompletedList =
-                checkInRepository.findCompletedHabitIdsByPeriod(userId, lastMonthStart, lastMonthEnd);
+                checkInRepository.findCompletedHabitIdsByPeriod(userId, lastMonthStart, lastMonthEnd)
+                        .stream()
+                        .filter(lastMonthHabitIds::contains)
+                        .toList();
 
-        // 이번 달 달성률
         int thisMonthTarget = achievementCalculator.countTargetDaysInPeriod(activeHabits, thisMonthStart, thisMonthEnd);
         double thisMonthRate = achievementCalculator.calcRate(thisMonthCompletedList.size(), thisMonthTarget);
 
-        // 지난 달 달성률 (지난달 당시 활성이었던 습관 기준)
-        List<Habit> lastMonthHabits = habitRepository.findHabitsActiveInPeriod(
-                userId,
-                lastMonthStart.atStartOfDay(),
-                lastMonthEnd.atTime(23, 59, 59)
-        );
         int lastMonthTarget = achievementCalculator.countTargetDaysInPeriod(lastMonthHabits, lastMonthStart, lastMonthEnd);
         double lastMonthRate = achievementCalculator.calcRate(lastMonthCompletedList.size(), lastMonthTarget);
 
         double improved = Math.round((thisMonthRate - lastMonthRate) * 10) / 10.0;
 
-        // 이번 주 월~일 일별 완료율
         List<DailyAchievementResponse> dailyAchievements =
-                calcWeeklyDailyAchievements(activeHabits, userId, weekMonday, weekSunday, today);
+                calcWeeklyDailyAchievements(activeHabits, activeHabitIds, userId, weekMonday, weekSunday, today);
 
-        // 이번 달 카테고리별 달성률
         List<CategoryAchievementResponse> categoryAchievements =
                 calcCategoryAchievements(activeHabits, thisMonthCompletedList, thisMonthStart, thisMonthEnd);
 
-        return new StatsDashboardResponse(
-                user.getNickname(),
-                thisMonthRate,
-                improved,
-                dailyAchievements,
-                categoryAchievements
-        );
+        return new StatsDashboardResponse(user.getNickname(), thisMonthRate, improved, dailyAchievements, categoryAchievements);
     }
 
     private List<DailyAchievementResponse> calcWeeklyDailyAchievements(
-            List<Habit> habits, Long userId,
+            List<Habit> habits, Set<Long> activeHabitIds, Long userId,
             LocalDate weekStart, LocalDate weekEnd, LocalDate today) {
 
         List<DailyAchievementResponse> result = new ArrayList<>();
@@ -112,9 +106,12 @@ public class StatsService {
             double rate = 0.0;
 
             if (!date.isAfter(today)) {
-                Set<Long> completedIds = new HashSet<>(
-                        checkInRepository.findCompletedHabitIdsByDate(userId, date)
-                );
+                Set<Long> completedIds = checkInRepository
+                        .findCompletedHabitIdsByDate(userId, date)
+                        .stream()
+                        .filter(activeHabitIds::contains)
+                        .collect(Collectors.toSet());
+
                 completedCount = (int) habits.stream()
                         .filter(h -> h.getCustomDays().contains(dow))
                         .filter(h -> completedIds.contains(h.getId()))
