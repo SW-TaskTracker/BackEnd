@@ -5,6 +5,7 @@ import org.swengineer.habit.entity.enums.FrequencyType;
 import org.swengineer.habit.entity.enums.HabitCategory;
 
 import java.time.DayOfWeek;
+import java.util.List;
 import java.util.Set;
 
 public record HabitListResponse(
@@ -12,17 +13,21 @@ public record HabitListResponse(
         String name,
         HabitCategory category,
         FrequencyType frequencyType,
-        Set<DayOfWeek> customDays,
+        List<DayOfWeek> customDays,
         boolean completedToday,
         int streak
 ) {
     public static HabitListResponse of(Habit habit, boolean completedToday, int streak) {
+        List<DayOfWeek> sortedDays = habit.getCustomDays().stream()
+                .sorted()
+                .toList();
+
         return new HabitListResponse(
                 habit.getId(),
                 habit.getName(),
                 habit.getCategory(),
                 habit.getFrequencyType(),
-                habit.getCustomDays(),
+                sortedDays,
                 completedToday,
                 streak
         );
