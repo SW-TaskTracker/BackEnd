@@ -2,13 +2,17 @@ package org.swengineer.ai.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.swengineer.ai.client.OpenAiApiCaller;
 import org.swengineer.ai.dto.context.MorningCoachingContext;
 import org.swengineer.ai.dto.request.Message;
 import org.swengineer.ai.dto.response.CoachingMessageResponse;
+import org.swengineer.ai.entity.CoachingMessage;
 import org.swengineer.ai.fallback.FallbackMessageProvider;
 import org.swengineer.ai.repository.CoachingMessageRepository;
+import org.swengineer.habit.service.HabitService;
+import org.swengineer.stats.common.AchievementCalculator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,6 +26,8 @@ public class AiCoachingService {
     private final OpenAiApiCaller openAiApiCaller;
     private final FallbackMessageProvider fallbackMessageProvider;
     private final CoachingMessageRepository coachingMessageRepository;
+    private final HabitService habitService;
+    private final AchievementCalculator achievementCalculator;
 
     private static final String SYSTEM_PROMPT =
             """
@@ -34,6 +40,21 @@ public class AiCoachingService {
         - 오직 메시지 본문만 출력, 부가 설명 없음
         
         """;
+
+    @Async
+    public void generateAndSaveForUser(Long userId) {
+        try {
+            MorningCoachingContext context = new MorningCoachingContext(
+                    habitService.getMaxStreak(userId),
+                    habitService.getTodayHabitNames(userId),
+                    achievementCalculator.calcThisMonthRate(userId)
+            );
+            String content = generatingMorningMessage(context);
+            coachingMessageRepository.save(CoachingMessage.create(userId, content));
+        } catch (Exception e) {
+            log.error("유저 {} 코칭 메시지 생성 실패: {}", userId, e.getMessage());
+        }
+    }
 
     public String generatingMorningMessage(MorningCoachingContext context){
 
