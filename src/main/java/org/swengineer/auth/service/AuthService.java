@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.swengineer.ai.service.AiCoachingService;
 import org.swengineer.auth.code.AuthErrorCode;
 import org.swengineer.auth.dto.request.LoginRequest;
 import org.swengineer.auth.dto.request.SignUpRequest;
@@ -22,6 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AiCoachingService aiCoachingService;
 
     @Transactional
     public TokenResponse signUp(SignUpRequest request) {
@@ -35,6 +37,7 @@ public class AuthService {
                 passwordEncoder.encode(request.password())
         );
         userRepository.save(user);
+        aiCoachingService.generateAndSaveForUser(user.getId());
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRoutinerId());
         return new TokenResponse(accessToken);
