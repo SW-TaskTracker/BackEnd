@@ -20,44 +20,54 @@ public class AchievementCalculator {
     private final HabitRepository habitRepository;
     private final CheckInRepository checkInRepository;
 
-    /**
-     * 이번 달 달성률 계산
-     * 삭제된 습관의 체크인은 분자에서 제외
-     */
     public double calcThisMonthRate(Long userId) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate start = today.withDayOfMonth(1);
 
-        List<Habit> activeHabits = habitRepository.findByUserIdAndDeletedAtIsNull(userId);
-        Set<Long> activeHabitIds = activeHabits.stream()
-                .map(Habit::getId)
-                .collect(Collectors.toSet());
+        List<Habit> periodHabits = habitRepository.findHabitsActiveInPeriod(
+                userId, start.atStartOfDay(), today.atTime(23, 59, 59));
+        Set<Long> periodHabitIds = periodHabits.stream()
+                .map(Habit::getId).collect(Collectors.toSet());
 
-        int targetCount = countTargetDaysInPeriod(activeHabits, start, today);
+        int targetCount = countTargetDaysInPeriodForHabits(periodHabits, start, today);
         int completedCount = (int) checkInRepository
                 .findCompletedHabitIdsByPeriod(userId, start, today)
-                .stream()
-                .filter(activeHabitIds::contains)
-                .count();
+                .stream().filter(periodHabitIds::contains).count();
 
         return calcRate(completedCount, targetCount);
     }
 
-    public int countTargetDaysInPeriod(List<Habit> habits, LocalDate start, LocalDate end) {
+    public int countTargetDaysInPeriodForHabits(List<Habit> habits, LocalDate periodStart, LocalDate periodEnd) {
         int total = 0;
         for (Habit habit : habits) {
-            total += countDaysInPeriod(habit.getCustomDays(), start, end);
+            total += countEffectiveDays(habit, periodStart, periodEnd);
         }
         return total;
+    }
+
+    private int countEffectiveDays(Habit habit, LocalDate periodStart, LocalDate periodEnd) {
+        LocalDate habitStart = habit.getCreatedAt().toLocalDate();
+        LocalDate effectiveStart = habitStart.isAfter(periodStart) ? habitStart : periodStart;
+
+        LocalDate effectiveEnd;
+        if (habit.getDeletedAt() != null) {
+            // 삭제 당일도 분모에 포함 (minusDays 제거)
+            LocalDate deletedDate = habit.getDeletedAt().toLocalDate();
+            effectiveEnd = deletedDate.isBefore(periodEnd) ? deletedDate : periodEnd;
+        } else {
+            effectiveEnd = periodEnd;
+        }
+
+        if (effectiveStart.isAfter(effectiveEnd)) return 0;
+
+        return countDaysInPeriod(habit.getCustomDays(), effectiveStart, effectiveEnd);
     }
 
     public int countDaysInPeriod(Set<DayOfWeek> targetDays, LocalDate start, LocalDate end) {
         int count = 0;
         LocalDate cursor = start;
         while (!cursor.isAfter(end)) {
-            if (targetDays.contains(cursor.getDayOfWeek())) {
-                count++;
-            }
+            if (targetDays.contains(cursor.getDayOfWeek())) count++;
             cursor = cursor.plusDays(1);
         }
         return count;
