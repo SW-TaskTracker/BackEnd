@@ -26,7 +26,7 @@ public class WeeklyInsightScheduler {
     private final AiInsightRepository aiInsightRepository;
 
 
-    @Scheduled(cron = "0 50 23 * * SUN", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 20 18 * * *", zone = "Asia/Seoul")
     public void generateWeeklyInsights() {
         log.info("주간 AI 인사이트 배치 시작");
 
