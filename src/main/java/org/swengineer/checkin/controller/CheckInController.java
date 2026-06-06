@@ -48,12 +48,12 @@ public class CheckInController {
             체크인을 취소합니다.
             - 당일 23:59까지만 취소 가능
             """)
-    @DeleteMapping("/{checkInId}")
+    @DeleteMapping("/{habitId}")
     public ResponseEntity<SuccessResponse<Void>> cancel(
             @AuthenticationPrincipal Long userId,
-            @PathVariable Long checkInId
+            @PathVariable Long habitId
     ) {
-        checkInService.cancel(userId, checkInId);
+        checkInService.cancel(userId, habitId);
         return ResponseEntity.ok(ApiResponse.success(CheckInSuccessCode.CHECK_IN_CANCEL_SUCCESS));
     }
 }

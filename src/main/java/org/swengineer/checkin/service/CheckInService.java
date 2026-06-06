@@ -35,9 +35,11 @@ public class CheckInService {
 
     //체크인 취소
     @Transactional
-    public void cancel(Long userId, Long checkInId) {
+    public void cancel(Long userId, Long habitId) {
 
-        CheckIn checkIn = checkInRepository.findById(checkInId)
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        CheckIn checkIn = checkInRepository.findTodayCheckIn(userId, habitId, today)
                 .orElseThrow(() -> new CustomException(CheckInErrorCode.CHECK_IN_NOT_FOUND));
 
         if (!checkIn.getUserId().equals(userId)) {

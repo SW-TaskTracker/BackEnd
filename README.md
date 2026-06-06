@@ -23,6 +23,7 @@
 
 ```
 src/main/java/org/swengineer
+
 ├── auth                          # 인증
 │   ├── controller/AuthController
 │   ├── service/AuthService
@@ -59,6 +60,20 @@ src/main/java/org/swengineer
 │   ├── service/HistoryService
 │   └── dto/response              # DayHistoryResponse, HabitHistoryItemResponse
 ├── common/base/BaseEntity        # 공통 엔티티 (created_at, updated_at, deleted_at)
+├── ai
+│   ├── client/OpenAiApiCaller    # OpenAI API 외부 통신 클라이언트
+│   ├── code                      # AI 관련 응답/에러 코드
+│   ├── config/RestTemplateConfig
+│   ├── controller                # AiCoachingController, AiInsightController
+│   ├── dto
+│   │   ├── context               # MorningCoachingContext (프롬프트 컨텍스트)
+│   │   ├── request               # ChatGptRequest, Message
+│   │   └── response              # ChatGptResponse, CoachingMessageResponse
+│   ├── entity                    # AiInsight, CoachingMessage
+│   ├── fallback                  # FallbackInsightProvider, FallbackMessageProvider (장애 대응 예외 처리)
+│   ├── repository                # AiInsightRepository, CoachingMessageRepository
+│   ├── scheduler                 # MorningCoachingScheduler, WeeklyInsightScheduler (스케줄러 트리거)
+│   └── service                   # AiCoachingService, AiInsightService
 └── global/api
     ├── config                    # SecurityConfig, SwaggerConfig, WebConfig
     ├── jwt                       # JwtTokenProvider, JwtAuthenticationFilter
@@ -106,6 +121,25 @@ src/main/java/org/swengineer
 | Method | URL | 설명 |
 |--------|-----|------|
 | GET | `/api/v1/history` | 날짜별 히스토리 조회 |
+
+### 체크인
+
+| Method | URL                          | 설명 |
+|--------|------------------------------|------|
+| POST | `/api/v1/check-in`           | 습관 체크인 (당일 토글) |
+| DELETE | `/api/v1/check-in/{habitId}` | 체크인 취소 |
+
+### AI 코칭
+
+| Method | URL | 설명 |
+|--------|-----|------|
+| GET | `/api/v1/ai/coaching` | 아침 AI 코칭 메시지 조회 |
+
+### AI 인사이트
+
+| Method | URL | 설명 |
+|--------|-----|------|
+| GET | `/api/v1/ai/insights` | 주간 습관 패턴 AI 인사이트 조회 |
 
 > 전체 API 문서: https://loutiner.p-e.kr/swagger-ui/index.html
 
@@ -164,3 +198,4 @@ main ── 배포 브랜치 (push 시 자동 배포)
 |------|------|
 | 변희민 | 인증, 습관 관리, 인프라/배포 |
 | 윤서현 | 유저(프로필 조회/수정, 로그아웃, 회원탈퇴), 통계 대시보드, 히스토리 조회 |
+| 박서영 | 체크인(습관 완료 처리/취소), AI 코칭 서비스(아침 코칭 메시지, 주간 인사이트, 스케줄러)|
