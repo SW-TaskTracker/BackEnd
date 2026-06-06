@@ -42,13 +42,22 @@ src/main/java/org/swengineer
 │   ├── service/CheckInService
 │   ├── entity/CheckIn
 │   └── repository/CheckInRepository
-├── user                      
+├── user
 │   ├── controller/UserController
 │   ├── service/UserService
 │   ├── entity/User
 │   ├── dto
 │   ├── code
 │   └── repository/UserRepository
+├── stats                         # 통계
+│   ├── controller/StatsController
+│   ├── service/StatsService
+│   ├── common/AchievementCalculator
+│   └── dto/response              # StatsDashboardResponse, DailyAchievementResponse, CategoryAchievementResponse
+├── history                       # 히스토리
+│   ├── controller/HistoryController
+│   ├── service/HistoryService
+│   └── dto/response              # DayHistoryResponse, HabitHistoryItemResponse
 ├── common/base/BaseEntity        # 공통 엔티티 (created_at, updated_at, deleted_at)
 └── global/api
     ├── config                    # SecurityConfig, SwaggerConfig, WebConfig
@@ -77,6 +86,26 @@ src/main/java/org/swengineer
 | PUT | `/api/v1/habits/{habitId}` | 습관 수정 |
 | DELETE | `/api/v1/habits/{habitId}` | 습관 삭제 |
 
+### 유저
+
+| Method | URL | 설명 |
+|--------|-----|------|
+| GET | `/api/v1/users/me` | 프로필 조회 |
+| PATCH | `/api/v1/users/me/nickname` | 닉네임 수정 |
+| POST | `/api/v1/users/me/logout` | 로그아웃 |
+| DELETE | `/api/v1/users/me` | 회원탈퇴 |
+
+### 통계
+
+| Method | URL | 설명 |
+|--------|-----|------|
+| GET | `/api/v1/stats/dashboard` | 통계 대시보드 조회 |
+
+### 히스토리
+
+| Method | URL | 설명 |
+|--------|-----|------|
+| GET | `/api/v1/history` | 날짜별 히스토리 조회 |
 
 > 전체 API 문서: https://loutiner.p-e.kr/swagger-ui/index.html
 
@@ -131,6 +160,7 @@ main ── 배포 브랜치 (push 시 자동 배포)
 
 ## 팀원
 
-| 이름 | 역할                |
-|------|-------------------|
+| 이름 | 역할 |
+|------|------|
 | 변희민 | 인증, 습관 관리, 인프라/배포 |
+| 윤서현 | 유저(프로필 조회/수정, 로그아웃, 회원탈퇴), 통계 대시보드, 히스토리 조회 |
