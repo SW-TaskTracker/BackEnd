@@ -42,6 +42,13 @@ src/main/java/org/swengineer
 │   ├── service/CheckInService
 │   ├── entity/CheckIn
 │   └── repository/CheckInRepository
+├── user                      
+│   ├── controller/UserController
+│   ├── service/UserService
+│   ├── entity/User
+│   ├── dto
+│   ├── code
+│   └── repository/UserRepository
 ├── common/base/BaseEntity        # 공통 엔티티 (created_at, updated_at, deleted_at)
 └── global/api
     ├── config                    # SecurityConfig, SwaggerConfig, WebConfig
